@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -8,6 +8,7 @@ interface OtpInputProps {
   gmailUsername: string;
   onGmailChange: (val: string) => void;
   onOtpChange: (val: string) => void;
+  onOtpSent?: (sent: boolean) => void;
   otp: string;
   flow: "signup" | "login";
 }
@@ -16,12 +17,25 @@ export function OtpInput({
   gmailUsername,
   onGmailChange,
   onOtpChange,
+  onOtpSent,
   otp,
   flow,
 }: OtpInputProps) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Auto-dismiss toast after 3s
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+  };
 
   const sendOtp = async () => {
     if (!gmailUsername.trim()) {
@@ -35,7 +49,6 @@ export function OtpInput({
 
     setSending(true);
     setSendError("");
-    setSent(false);
 
     try {
       const res = await fetch("/api/auth/send-otp", {
@@ -45,24 +58,44 @@ export function OtpInput({
       });
       const json = await res.json();
       if (!res.ok) {
-        setSendError(json.error ?? "Failed to send OTP. Please try again.");
+        const msg = json.error ?? "Failed to send OTP. Please try again.";
+        setSendError(msg);
+        showToast(msg, "error");
+        setSent(false);
+        onOtpSent?.(false);
       } else {
         setSent(true);
+        onOtpSent?.(true);
+        showToast("OTP sent — check your inbox.", "success");
       }
     } catch {
-      setSendError("Network error. Make sure the dev server is running.");
+      const msg = "Network error. Make sure the dev server is running.";
+      setSendError(msg);
+      showToast(msg, "error");
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <div>
-      {/* Gmail input + Send OTP button */}
-      <div
-        className="grid gap-4 mt-4"
-        style={{ gridTemplateColumns: "1fr auto" }}
-      >
+    <div className="otp-input-root">
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className="otp-toast"
+          style={{
+            background: toast.type === "success" ? "rgba(74,222,128,0.12)" : "rgba(255,45,94,0.12)",
+            border: `1px solid ${toast.type === "success" ? "rgba(74,222,128,0.3)" : "rgba(255,45,94,0.3)"}`,
+            color: toast.type === "success" ? "#4ade80" : "#ff8fa8",
+          }}
+        >
+          <span>{toast.type === "success" ? "✓" : "✕"}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Gmail input row */}
+      <div className="otp-gmail-row">
         <div className="gmail-wrap">
           <input
             type="text"
@@ -78,7 +111,7 @@ export function OtpInput({
           size="md"
           onClick={sendOtp}
           disabled={sending}
-          style={{ marginTop: 0, whiteSpace: "nowrap" }}
+          style={{ whiteSpace: "nowrap", flexShrink: 0 }}
         >
           {sending ? "Sending..." : sent ? "Resend OTP" : "Send OTP"}
         </Button>
@@ -87,12 +120,6 @@ export function OtpInput({
       {sendError && (
         <p className="text-sm mt-2" style={{ color: "var(--primary)" }}>
           {sendError}
-        </p>
-      )}
-
-      {sent && (
-        <p className="text-sm mt-2" style={{ color: "#4ade80" }}>
-          ✓ OTP sent to {gmailUsername}@gmail.com — check your inbox
         </p>
       )}
 

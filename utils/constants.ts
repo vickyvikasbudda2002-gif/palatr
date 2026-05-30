@@ -3,6 +3,7 @@ export const APP_TAGLINE = "Taste where you belong.";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://palatr.in";
 
 export const FOOD_PREFERENCES = [
+  { value: "", label: "Choose your preference" },
   { value: "veg", label: "Veg 🥦" },
   { value: "nonveg", label: "Non Veg 🍗" },
   { value: "eggetarian", label: "Eggetarian 🥚" },

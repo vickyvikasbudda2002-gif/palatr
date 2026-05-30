@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { email, otp } = parsed.data;
     console.log("[verify-otp] Verifying for:", email);
 
-    // Verify OTP using server client — sets session cookie on response
+    // Verify OTP — sets session cookie on response
     const supabase = await createClient();
     const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
       email,
@@ -44,29 +44,37 @@ export async function POST(request: NextRequest) {
     const session = verifyData.session;
     console.log("[verify-otp] OTP verified for:", authUser.id);
 
-    // Check if profile exists
     const admin = createAdminClient();
+
+    // Check if a real profile exists (has first_name filled in)
     const { data: existingProfile } = await admin
       .from("users")
       .select("id, email, first_name, home_state, current_city, is_admin")
       .eq("id", authUser.id)
       .single();
 
-    if (existingProfile) {
+    // Treat as LOGIN only if the profile has a real first_name saved
+    // (not an empty trigger-created row)
+    const isExistingUser =
+      existingProfile &&
+      existingProfile.first_name &&
+      existingProfile.first_name.trim().length > 0;
+
+    if (isExistingUser) {
       console.log("[verify-otp] Login:", existingProfile.first_name);
       return NextResponse.json({
         message: "Login successful.",
         action: "login",
         user: existingProfile,
-        // Return tokens so client can set session explicitly
         access_token: session.access_token,
         refresh_token: session.refresh_token,
       });
     }
 
-    // New user — save profile
+    // New user (or empty trigger row) — validate and save full profile
     const profileParsed = signupSchema.safeParse(body);
     if (!profileParsed.success) {
+      console.error("[verify-otp] Profile validation failed:", profileParsed.error.errors);
       return NextResponse.json(
         { error: profileParsed.error.errors[0].message },
         { status: 400 }
@@ -75,8 +83,7 @@ export async function POST(request: NextRequest) {
 
     const profile = profileParsed.data;
 
-    // The Supabase trigger may have already created a row with empty fields.
-    // Use upsert to overwrite with the real profile data.
+    // Upsert overwrites any empty trigger-created row with real data
     const { data: newProfile, error: profileError } = await admin
       .from("users")
       .upsert(
@@ -91,17 +98,17 @@ export async function POST(request: NextRequest) {
           food_pref: profile.food_pref,
           is_admin: false,
         },
-        { onConflict: "id" } // always overwrite on conflict
+        { onConflict: "id" }
       )
       .select("id, email, first_name, home_state, current_city, is_admin")
       .single();
 
     if (profileError) {
-      console.error("[verify-otp] Profile error:", profileError.message);
+      console.error("[verify-otp] Profile upsert error:", profileError.message);
       return NextResponse.json({ error: "Profile save failed." }, { status: 500 });
     }
 
-    console.log("[verify-otp] Signup complete:", newProfile?.first_name);
+    console.log("[verify-otp] Signup complete:", newProfile?.first_name, "| state:", newProfile?.home_state);
     return NextResponse.json({
       message: "Account created.",
       action: "signup",

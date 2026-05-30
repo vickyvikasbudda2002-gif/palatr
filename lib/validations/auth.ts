@@ -26,6 +26,10 @@ export const signupSchema = z.object({
   last_name: z.string().optional(),
   home_state: z.string().min(1, "Home state is required"),
   current_city: z.string().min(1, "Current city is required"),
-  spice_tolerance: z.enum(["mild", "medium", "spicy", "andhra"]),
-  food_pref: z.enum(["veg", "nonveg", "eggetarian", "both"]),
+  spice_tolerance: z.enum(["mild", "medium", "spicy"], {
+    errorMap: () => ({ message: "Please choose your spice level." }),
+  }),
+  food_pref: z.enum(["veg", "nonveg", "eggetarian", "both"], {
+    errorMap: () => ({ message: "Please choose your food preference." }),
+  }),
 });

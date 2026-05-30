@@ -190,6 +190,44 @@
     border-color: transparent;
   }
 
+  /* Pinned feed navbar */
+  .feed-navbar {
+    @apply fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6;
+    height: 60px;
+    background: rgba(7, 7, 7, 0.85);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .feed-navbar-logo {
+    @apply flex items-center gap-2 font-black text-white select-none;
+    font-size: 22px;
+    letter-spacing: -1px;
+    text-decoration: none;
+  }
+  .feed-navbar-logo img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+  }
+  .feed-navbar-profile {
+    @apply flex items-center justify-center rounded-full cursor-pointer transition-all;
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 18px;
+  }
+  .feed-navbar-profile:hover {
+    border-color: var(--primary);
+    background: var(--surface-hover);
+  }
+
+  /* Push feed content below navbar */
+  .feed-content-offset {
+    padding-top: 60px;
+  }
+
   /* Floating action button */
   .fab {
     @apply fixed right-9 flex items-center justify-center rounded-full text-white cursor-pointer transition-all z-50;
@@ -223,21 +261,56 @@
 
   /* Gmail input wrapper */
   .gmail-wrap {
-    @apply flex items-center mt-4 overflow-hidden rounded-2xl transition-all;
+    @apply flex items-center overflow-hidden rounded-2xl transition-all;
     background: var(--surface);
     border: 1px solid transparent;
+    min-width: 0;
+    flex: 1;
   }
   .gmail-wrap:focus-within {
     border-color: var(--primary);
     background: #181818;
   }
   .gmail-wrap input {
-    @apply flex-1 py-4 px-5 bg-transparent border-none outline-none text-white text-sm;
+    @apply py-4 px-5 bg-transparent border-none outline-none text-white text-sm;
     font-family: inherit;
+    min-width: 0;
+    flex: 1;
+    width: 100%;
   }
   .gmail-fixed {
-    @apply pr-5 font-semibold text-sm;
+    @apply pr-5 font-semibold text-sm whitespace-nowrap;
     color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  /* OTP input root */
+  .otp-input-root {
+    @apply mt-4;
+  }
+
+  /* OTP gmail row — side by side on desktop, stacked on mobile */
+  .otp-gmail-row {
+    @apply flex gap-3 items-stretch mt-0;
+  }
+
+  /* OTP toast */
+  .otp-toast {
+    @apply flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold mb-3;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.2s ease;
+  }
+
+  @media (max-width: 480px) {
+    .otp-gmail-row {
+      @apply flex-col;
+    }
+    .gmail-wrap {
+      width: 100%;
+    }
+    .gmail-fixed {
+      @apply pr-4;
+    }
   }
 
   /* Upload box */
@@ -283,5 +356,35 @@
 
   .glow-primary {
     box-shadow: 0 0 0 3px rgba(255, 45, 94, 0.15);
+  }
+}
+
+/* ── Mobile / responsive overrides ── */
+@media (max-width: 640px) {
+  .modal-box {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1.5rem;
+    max-height: 95vh;
+  }
+  .modal-title {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+  /* Stack 2-col grids in modals to single column on small screens */
+  .modal-box .grid[style*="1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  .feed-navbar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  /* Feed header controls stack vertically */
+  .feed-controls {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .feed-controls input,
+  .feed-controls select {
+    flex: 1;
+    min-width: 0;
   }
 }

@@ -10,7 +10,7 @@ export function IntroScreen({ onEnd }: IntroScreenProps) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => handleEnd(), 5000);
+    const timer = setTimeout(() => handleEnd(), 10000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -25,38 +25,19 @@ export function IntroScreen({ onEnd }: IntroScreenProps) {
       style={{
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? "auto" : "none",
-        background: "linear-gradient(45deg, #000000, #1a050a, #000000)",
-        backgroundSize: "400% 400%",
-        animation: "gradientBG 10s ease infinite",
+        background: "#000",
       }}
     >
-      {/* Background video */}
+      {/* Background video — fills the entire screen */}
       <video
         autoPlay
         muted
         playsInline
         loop
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0.6 }}
       >
         <source src="/videos/intro.mp4" type="video/mp4" />
       </video>
-
-      {/* Logo overlay */}
-      <div className="relative z-10 text-center">
-        <div
-          className="text-8xl font-black text-white"
-          style={{ letterSpacing: "-4px" }}
-        >
-          PALATR.
-        </div>
-        <p
-          className="mt-4 text-lg font-medium tracking-widest uppercase"
-          style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "6px" }}
-        >
-          Taste where you belong
-        </p>
-      </div>
 
       {/* Skip button */}
       <button
@@ -66,6 +47,7 @@ export function IntroScreen({ onEnd }: IntroScreenProps) {
           background: "rgba(255,255,255,0.05)",
           border: "1px solid rgba(255,255,255,0.08)",
           backdropFilter: "blur(12px)",
+          zIndex: 10,
         }}
       >
         Skip Intro

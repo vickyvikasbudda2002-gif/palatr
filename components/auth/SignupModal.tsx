@@ -22,19 +22,24 @@ export function SignupModal({ isOpen, onSuccess, onSwitchToLogin }: SignupModalP
   const [lastName, setLastName] = useState("");
   const [gmailUsername, setGmailUsername] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [homeState, setHomeState] = useState("");
-  const [spiceTolerance, setSpiceTolerance] = useState("medium");
-  const [foodPref, setFoodPref] = useState("both");
+  const [spiceTolerance, setSpiceTolerance] = useState("");
+  const [foodPref, setFoodPref] = useState("");
   const [tncChecked, setTncChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!tncChecked) { setError("You must agree to the Terms & Conditions."); return; }
+    // All fields must be filled
     if (!firstName.trim()) { setError("First name is required."); return; }
-    if (!homeState) { setError("Please select where you are from."); return; }
     if (!gmailUsername.trim()) { setError("Please enter your Gmail username."); return; }
-    if (!otp || otp.length < 6) { setError("Please enter the OTP."); return; }
+    if (!otpSent) { setError("Please send and verify the OTP first."); return; }
+    if (!otp || otp.length < 6) { setError("Please enter the OTP sent to your email."); return; }
+    if (!homeState) { setError("Please select where you are from."); return; }
+    if (!spiceTolerance) { setError("Please choose your spice level."); return; }
+    if (!foodPref) { setError("Please choose your food preference."); return; }
+    if (!tncChecked) { setError("You must agree to the Terms & Conditions."); return; }
 
     setLoading(true);
     setError("");
@@ -59,8 +64,6 @@ export function SignupModal({ isOpen, onSuccess, onSwitchToLogin }: SignupModalP
       const json = await res.json();
       if (!res.ok) { setError(json.error ?? "Signup failed."); return; }
 
-      // Set session client-side using the returned tokens
-      // This ensures the browser has the auth cookie before navigating
       if (json.access_token && json.refresh_token) {
         const supabase = createClient();
         const { error: sessionError } = await supabase.auth.setSession({
@@ -85,20 +88,24 @@ export function SignupModal({ isOpen, onSuccess, onSwitchToLogin }: SignupModalP
       <div className="modal-title">Create your<br />taste profile.</div>
       <p className="modal-sub">Join PALATR and discover restaurants your people actually love.</p>
 
+      {/* Name row */}
       <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <Input placeholder="First Name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
         <Input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
       </div>
 
+      {/* OTP input — passes back whether OTP was successfully sent */}
       <OtpInput
         gmailUsername={gmailUsername}
         onGmailChange={setGmailUsername}
         otp={otp}
         onOtpChange={setOtp}
+        onOtpSent={setOtpSent}
         flow="signup"
       />
 
-      <div className="grid gap-4 mt-0" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      {/* State + City row */}
+      <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <Select value={homeState} onChange={(e) => setHomeState(e.target.value)}>
           <option value="">Where are you from? *</option>
           {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -108,19 +115,33 @@ export function SignupModal({ isOpen, onSuccess, onSwitchToLogin }: SignupModalP
         </Select>
       </div>
 
+      {/* Spice + Food pref row */}
       <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <Select value={spiceTolerance} onChange={(e) => setSpiceTolerance(e.target.value)}>
-          {SPICE_LEVELS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          {SPICE_LEVELS.map((s) => (
+            <option key={s.value} value={s.value} disabled={s.value === ""}>
+              {s.label}
+            </option>
+          ))}
         </Select>
         <Select value={foodPref} onChange={(e) => setFoodPref(e.target.value)}>
-          {FOOD_PREFERENCES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+          {FOOD_PREFERENCES.map((f) => (
+            <option key={f.value} value={f.value} disabled={f.value === ""}>
+              {f.label}
+            </option>
+          ))}
         </Select>
       </div>
 
+      {/* T&C */}
       <div className="flex items-start gap-3 mt-5">
-        <input type="checkbox" id="tnc" checked={tncChecked}
+        <input
+          type="checkbox"
+          id="tnc"
+          checked={tncChecked}
           onChange={(e) => setTncChecked(e.target.checked)}
-          className="mt-1 accent-[#ff2d5e] scale-110 cursor-pointer" />
+          className="mt-1 accent-[#ff2d5e] scale-110 cursor-pointer"
+        />
         <label htmlFor="tnc" className="text-xs leading-relaxed cursor-pointer" style={{ color: "var(--muted)" }}>
           I agree to the{" "}
           <a href="/terms" className="text-[#ff2d5e] underline font-semibold">Terms & Conditions</a>,{" "}
