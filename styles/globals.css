@@ -1,0 +1,287 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #070707;
+    --surface: #121212;
+    --surface-hover: #1a1a1a;
+    --text: #ffffff;
+    --muted: #8d8d8d;
+    --border: rgba(255, 255, 255, 0.08);
+    --primary: #ff2d5e;
+    --primary-hover: #e01f4c;
+    --primary2: #ff4d77;
+    --gem-primary: #8b5cf6;
+    --gem-secondary: #c084fc;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius: 1rem;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
+  }
+}
+
+@layer components {
+  /* Cinematic gradient background for intro */
+  .gradient-bg {
+    background: linear-gradient(45deg, #000000, #1a050a, #000000);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
+  }
+
+  /* Primary CTA button */
+  .btn-primary {
+    @apply w-full border-none py-5 rounded-full text-white font-bold text-base cursor-pointer transition-all;
+    background: linear-gradient(145deg, var(--primary), var(--primary2));
+    box-shadow: 0 8px 25px rgba(255, 45, 94, 0.3);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 12px 30px rgba(255, 45, 94, 0.5);
+    transform: translateY(-2px);
+  }
+  .btn-primary:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply w-full border py-5 rounded-full text-white font-bold text-base cursor-pointer transition-all mt-3;
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--surface-hover);
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply w-full border-none py-5 rounded-full font-bold text-base cursor-pointer transition-all mt-3;
+    background: rgba(255, 45, 94, 0.1);
+    color: #ff8fa8;
+  }
+  .btn-danger:hover {
+    background: rgba(255, 45, 94, 0.2);
+    color: #ffb3c1;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full py-4 px-5 mt-4 border border-transparent outline-none rounded-2xl text-white text-sm transition-all;
+    background: var(--surface);
+    font-family: inherit;
+  }
+  .form-input:focus {
+    border-color: var(--primary);
+    background: #181818;
+  }
+
+  /* Form select */
+  .form-select {
+    @apply w-full py-4 px-5 mt-4 border border-transparent outline-none rounded-2xl text-white text-sm transition-all;
+    background: var(--surface);
+    font-family: inherit;
+    appearance: none;
+  }
+  .form-select:focus {
+    border-color: var(--primary);
+    background: #181818;
+  }
+
+  /* Card */
+  .palatr-card {
+    @apply relative overflow-hidden rounded-3xl cursor-pointer transition-all;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    height: 600px;
+  }
+  .palatr-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center p-5 z-50 overflow-y-auto;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s forwards;
+  }
+
+  /* Modal box */
+  .modal-box {
+    @apply w-full rounded-3xl p-12 overflow-y-auto;
+    max-width: 680px;
+    max-height: 90vh;
+    background: #0f0f0f;
+    border: 1px solid var(--border);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    animation: scaleUp 0.3s forwards;
+  }
+
+  /* Modal title */
+  .modal-title {
+    @apply font-black leading-none;
+    font-size: clamp(40px, 6vw, 56px);
+    letter-spacing: -2px;
+  }
+
+  /* Modal subtitle */
+  .modal-sub {
+    @apply mt-4 leading-relaxed text-base;
+    color: var(--muted);
+  }
+
+  /* Toggle button group */
+  .toggle-btn {
+    @apply flex-1 py-4 rounded-2xl font-semibold cursor-pointer transition-all;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: white;
+    font-family: inherit;
+  }
+  .toggle-btn.active {
+    background: linear-gradient(145deg, var(--primary), var(--primary2));
+    border-color: transparent;
+  }
+
+  /* Gem toggle */
+  .gem-toggle-btn {
+    @apply flex-1 py-4 rounded-2xl font-semibold cursor-pointer transition-all;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: white;
+    font-family: inherit;
+  }
+  .gem-toggle-btn.active {
+    background: linear-gradient(145deg, var(--gem-primary), var(--gem-secondary));
+    border-color: transparent;
+  }
+
+  /* Floating action button */
+  .fab {
+    @apply fixed right-9 flex items-center justify-center rounded-full text-white cursor-pointer transition-all z-50;
+    width: 70px;
+    height: 70px;
+    font-size: 32px;
+    box-shadow: 0 10px 30px rgba(255, 45, 94, 0.4);
+    background: linear-gradient(145deg, var(--primary), var(--primary2));
+  }
+  .fab:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 45, 94, 0.6);
+  }
+  .fab:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  .fab-gem {
+    bottom: 125px;
+    background: linear-gradient(145deg, var(--gem-primary), var(--gem-secondary));
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+    font-size: 28px;
+  }
+  .fab-gem:hover {
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6);
+  }
+
+  .fab-add {
+    bottom: 35px;
+  }
+
+  /* Gmail input wrapper */
+  .gmail-wrap {
+    @apply flex items-center mt-4 overflow-hidden rounded-2xl transition-all;
+    background: var(--surface);
+    border: 1px solid transparent;
+  }
+  .gmail-wrap:focus-within {
+    border-color: var(--primary);
+    background: #181818;
+  }
+  .gmail-wrap input {
+    @apply flex-1 py-4 px-5 bg-transparent border-none outline-none text-white text-sm;
+    font-family: inherit;
+  }
+  .gmail-fixed {
+    @apply pr-5 font-semibold text-sm;
+    color: var(--muted);
+  }
+
+  /* Upload box */
+  .upload-box {
+    @apply mt-4 rounded-2xl p-5;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+  }
+
+  /* Gem badge */
+  .gem-badge {
+    @apply inline-flex px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #d8b4fe;
+    letter-spacing: 1px;
+  }
+
+  /* Card tag */
+  .card-tag {
+    @apply inline-flex px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-4;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    letter-spacing: 1px;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    background: linear-gradient(to right, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-gem {
+    background: linear-gradient(to right, #e9d5ff, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 0 3px rgba(255, 45, 94, 0.15);
+  }
+}

@@ -1,0 +1,6 @@
+.vs
+.vscode
+node_modules
+.next
+.env
+.env.local
