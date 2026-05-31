@@ -6,7 +6,7 @@ import { signupSchema } from "@/lib/validations/auth";
 
 const verifySchema = z.object({
   email: z.string().email().refine((e) => e.endsWith("@gmail.com")),
-  otp: z.string().length(6), // Supabase OTPs are exactly 6 digits
+  otp: z.string().min(6).max(8), // Supabase can send 6 or 8 digit OTPs
 });
 
 export async function POST(request: NextRequest) {
