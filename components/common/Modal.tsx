@@ -24,6 +24,10 @@ export function Modal({
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      // Fire a resize event after modal closes so Leaflet recalculates map size
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 300);
     }
     return () => {
       document.body.style.overflow = "";

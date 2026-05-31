@@ -45,12 +45,22 @@ export function FeedMap({ restaurants }: FeedMapProps) {
         attributionControl: false,
       });
 
-      // Dark CartoDB tiles — no API key needed
+      // CartoDB Dark Matter (No Labels) — roads visible via CSS filter below
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
         {
           maxZoom: 19,
           subdomains: "abcd",
+        }
+      ).addTo(map);
+
+      // Road labels layer on top — slightly brightened so they're readable
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
+        {
+          maxZoom: 19,
+          subdomains: "abcd",
+          opacity: 0.85,
         }
       ).addTo(map);
 
@@ -75,6 +85,15 @@ export function FeedMap({ restaurants }: FeedMapProps) {
       }
     };
   }, []);
+
+  // Whenever a modal opens/closes it shifts layout — tell Leaflet to recalculate
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const timer = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 350); // wait for modal animation to finish
+    return () => clearTimeout(timer);
+  });
 
   // Update restaurant pins whenever mappable restaurants change
   useEffect(() => {
@@ -332,7 +351,14 @@ export function FeedMap({ restaurants }: FeedMapProps) {
       </div>
 
       {/* The actual map */}
-      <div ref={mapRef} style={{ height: "420px", width: "100%" }} />
+      <div
+        ref={mapRef}
+        style={{
+          height: "420px",
+          width: "100%",
+          filter: "brightness(1.35) contrast(1.1) saturate(0.9)",
+        }}
+      />
 
       {/* No-pins notice */}
       {!hasPins && (
