@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRestaurants } from "@/hooks/useRestaurants";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -24,6 +24,11 @@ import { debounce } from "@/utils/debounce";
 import type { Restaurant } from "@/types/restaurant";
 import type { FilterOption } from "@/utils/filterRestaurants";
 import type { SortOption } from "@/utils/sortRestaurants";
+
+// Dynamically import FeedMap — Leaflet is browser-only, no SSR
+const FeedMap = lazy(() =>
+  import("@/components/feed/FeedMap").then((m) => ({ default: m.FeedMap }))
+);
 
 type ActiveModal = null | "review" | "watchReviews" | "report" | "addRestaurant" | "addGem" | "newToCity" | "top3" | "profile";
 
@@ -112,6 +117,26 @@ export default function FeedPage() {
             </select>
           </div>
         </div>
+
+        {/* Map — shows right after header, before the grid */}
+        <Suspense fallback={
+          <div
+            style={{
+              height: "420px",
+              borderRadius: "24px",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              marginBottom: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div className="w-8 h-8 rounded-full border-2 border-[rgba(255,255,255,0.1)] border-t-[#ff2d5e] animate-spin" />
+          </div>
+        }>
+          <FeedMap restaurants={restaurants} />
+        </Suspense>
 
         {/* Restaurant grid */}
         {isLoading ? (

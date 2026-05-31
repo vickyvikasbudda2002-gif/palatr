@@ -359,6 +359,76 @@
   }
 }
 
+/* ── Leaflet map dark-theme overrides ── */
+.leaflet-container {
+  background: #0d0d0d;
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Dark popup */
+.palatr-popup .leaflet-popup-content-wrapper {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  padding: 0;
+  overflow: hidden;
+}
+.palatr-popup .leaflet-popup-content {
+  margin: 12px 14px;
+  color: #fff;
+}
+.palatr-popup .leaflet-popup-tip-container {
+  display: none;
+}
+.palatr-popup .leaflet-popup-close-button {
+  color: #8d8d8d !important;
+  font-size: 18px !important;
+  top: 6px !important;
+  right: 8px !important;
+}
+.palatr-popup .leaflet-popup-close-button:hover {
+  color: #ff2d5e !important;
+}
+
+/* Zoom controls */
+.leaflet-control-zoom {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: #111 !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 16px !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #1e1e1e !important;
+  color: #ff2d5e !important;
+}
+
+/* Attribution */
+.leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #555 !important;
+  font-size: 10px !important;
+  border-radius: 6px 0 0 0 !important;
+}
+.leaflet-control-attribution a {
+  color: #ff2d5e !important;
+}
+
+/* User location pulse animation */
+@keyframes palatr-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  70% { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
 /* ── Mobile / responsive overrides ── */
 @media (max-width: 640px) {
   .modal-box {
@@ -386,5 +456,10 @@
   .feed-controls select {
     flex: 1;
     min-width: 0;
+  }
+
+  /* Footer responsive */
+  footer > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
   }
 }
