@@ -45,13 +45,13 @@ export function FeedMap({ restaurants }: FeedMapProps) {
 
       // Stadia Alidade Smooth Dark — roads clearly visible, dark but not pitch black
       L.tileLayer(
-        "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
-        { maxZoom: 20 }
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { maxZoom: 19 }
       ).addTo(map);
 
       L.control
         .attribution({ prefix: false, position: "bottomright" })
-        .addAttribution('© <a href="https://stadiamaps.com/" style="color:#ff2d5e">Stadia Maps</a>')
+        .addAttribution('© <a href="https://www.openstreetmap.org/copyright" style="color:#ff2d5e">OpenStreetMap</a>')
         .addTo(map);
 
       mapInstanceRef.current = map;

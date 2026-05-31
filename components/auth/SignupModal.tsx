@@ -9,7 +9,6 @@ import { OtpInput } from "./OtpInput";
 import { INDIAN_STATES } from "@/utils/states";
 import { SPICE_LEVELS } from "@/utils/spiceLevels";
 import { FOOD_PREFERENCES } from "@/utils/constants";
-import { createClient } from "@/lib/supabase/client";
 
 interface SignupModalProps {
   isOpen: boolean;
@@ -64,20 +63,10 @@ export function SignupModal({ isOpen, onSuccess, onSwitchToLogin }: SignupModalP
       const json = await res.json();
       if (!res.ok) { setError(json.error ?? "Signup failed."); return; }
 
-      if (json.access_token && json.refresh_token) {
-        const supabase = createClient();
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: json.access_token,
-          refresh_token: json.refresh_token,
-        });
-        if (sessionError) {
-          console.error("[SignupModal] setSession error:", sessionError.message);
-        }
-      }
-
+      // Session is set automatically via Supabase SSR cookies — no manual setSession needed
       onSuccess();
     } catch {
-      setError("Network error. Is the dev server running?");
+      setError("Something went wrong. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }

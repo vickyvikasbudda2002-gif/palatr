@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import { OtpInput } from "./OtpInput";
-import { createClient } from "@/lib/supabase/client";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -38,21 +37,10 @@ export function LoginModal({ isOpen, onSuccess, onSwitchToSignup }: LoginModalPr
       if (!res.ok) { setError(json.error ?? "Login failed."); return; }
       if (!json.user) { setError("No account found. Please sign up first."); return; }
 
-      // Set session client-side using the returned tokens
-      if (json.access_token && json.refresh_token) {
-        const supabase = createClient();
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: json.access_token,
-          refresh_token: json.refresh_token,
-        });
-        if (sessionError) {
-          console.error("[LoginModal] setSession error:", sessionError.message);
-        }
-      }
-
+      // Session is set automatically via Supabase SSR cookies — no manual setSession needed
       onSuccess();
     } catch {
-      setError("Network error. Is the dev server running?");
+      setError("Something went wrong. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
