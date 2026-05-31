@@ -40,12 +40,19 @@ export default function FeedPage() {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
-  // New-to-city popup after 30s
+  // New-to-city popup — show only once per user, never again after dismissed
   useEffect(() => {
     if (!user) return;
-    const timer = setTimeout(() => setActiveModal("newToCity"), 30000);
-    return () => clearTimeout(timer);
-  }, [user]);
+    const key = `palatr_city_shown_${user.id}`;
+    if (typeof window !== "undefined" && !localStorage.getItem(key)) {
+      // Show after a short delay so the feed loads first
+      const timer = setTimeout(() => {
+        setActiveModal("newToCity");
+        localStorage.setItem(key, "1");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [user?.id]);
 
   const { submitReview } = useReviews(selectedRestaurant?.id ?? "");
   const handleSearch = debounce((val: string) => setSearchQuery(val), 300);
@@ -65,9 +72,9 @@ export default function FeedPage() {
       <FeedNavbar onProfileClick={() => setActiveModal("profile")} />
 
       {/* Main content — offset below navbar */}
-      <div className="feed-content-offset px-[5%] pt-8">
+      <div className="feed-content-offset px-[5%]">
         {/* Header */}
-        <div className="flex justify-between items-end gap-6 mb-10 flex-wrap">
+        <div className="flex justify-between items-end gap-6 mb-10 flex-wrap pt-8">
           <h1
             className="font-black leading-tight"
             style={{ fontSize: "clamp(28px, 4vw, 56px)", letterSpacing: "-2px" }}

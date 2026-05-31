@@ -223,9 +223,9 @@
     background: var(--surface-hover);
   }
 
-  /* Push feed content below navbar */
+  /* Push feed content below navbar — navbar is 60px, add 8px breathing room */
   .feed-content-offset {
-    padding-top: 60px;
+    padding-top: 76px;
   }
 
   /* Floating action button */
@@ -234,6 +234,7 @@
     width: 70px;
     height: 70px;
     font-size: 32px;
+    line-height: 1;
     box-shadow: 0 10px 30px rgba(255, 45, 94, 0.4);
     background: linear-gradient(145deg, var(--primary), var(--primary2));
   }
@@ -420,6 +421,11 @@
 }
 .leaflet-control-attribution a {
   color: #ff2d5e !important;
+}
+
+/* Stadia tiles — no extra filter needed, roads are visible by default */
+.feed-map-wrapper .leaflet-tile-pane {
+  filter: none;
 }
 
 /* User location pulse animation */

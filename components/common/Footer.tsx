@@ -43,11 +43,9 @@ const SOCIALS = [
 ];
 
 const COMPANY_LINKS = [
-  { label: "About PALATR", href: "#" },
-  { label: "How It Works", href: "#" },
-  { label: "Contact Us", href: "#" },
-  { label: "Careers", href: "#" },
-  { label: "Press Kit", href: "#" },
+  { label: "About PALATR", href: "/about" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Contact Us", href: "mailto:palatrservice@gmail.com" },
 ];
 
 const PRODUCT_LINKS = [
@@ -141,47 +139,6 @@ export function Footer() {
               </a>
             ))}
           </div>
-
-          {/* App store placeholders */}
-          <div style={{ display: "flex", gap: "10px", marginTop: "20px", flexWrap: "wrap" }}>
-            {["App Store", "Google Play"].map((store) => (
-              <a
-                key={store}
-                href="#"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 14px",
-                  borderRadius: "10px",
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  color: "var(--muted)",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  transition: "all 0.2s",
-                  opacity: 0.6,
-                  cursor: "not-allowed",
-                }}
-                title="Coming soon"
-              >
-                {store === "App Store" ? "🍎" : "▶️"} {store}
-                <span
-                  style={{
-                    fontSize: "9px",
-                    background: "rgba(255,45,94,0.15)",
-                    color: "#ff4d77",
-                    padding: "1px 6px",
-                    borderRadius: "6px",
-                    fontWeight: 700,
-                  }}
-                >
-                  SOON
-                </span>
-              </a>
-            ))}
-          </div>
         </div>
 
         {/* Company */}
@@ -190,14 +147,25 @@ export function Footer() {
             Company
           </div>
           {COMPANY_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="block mb-3 text-sm transition-all hover:text-[#ff2d5e] hover:pl-1"
-              style={{ color: "var(--muted)" }}
-            >
-              {link.label}
-            </Link>
+            link.href.startsWith("mailto:") ? (
+              <a
+                key={link.label}
+                href={link.href}
+                className="block mb-3 text-sm transition-all hover:text-[#ff2d5e] hover:pl-1"
+                style={{ color: "var(--muted)", textDecoration: "none" }}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="block mb-3 text-sm transition-all hover:text-[#ff2d5e] hover:pl-1"
+                style={{ color: "var(--muted)" }}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
         </div>
 
