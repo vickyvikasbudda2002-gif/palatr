@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendOtpSchema } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/server";
 
+// ── In-memory rate limiter: max 3 OTP requests per email per 10 minutes ──────
+// (resets on server restart — good enough for serverless edge functions)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(email: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(email);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(email, { count: 1, resetAt: now + 10 * 60 * 1000 });
+    return false;
+  }
+
+  if (entry.count >= 3) return true;
+
+  entry.count++;
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -15,36 +34,39 @@ export async function POST(request: NextRequest) {
     }
 
     const { email } = parsed.data;
-    console.log("[send-otp] Sending OTP to:", email);
+
+    // Rate limit check
+    if (isRateLimited(email)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait 10 minutes before trying again." },
+        { status: 429 }
+      );
+    }
 
     const supabase = await createClient();
 
-    // signInWithOtp sends a 6-digit code when:
-    // 1. Supabase project has "Email OTP" enabled (not just magic link)
-    // 2. No redirectTo is set
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,
-        // Do NOT set emailRedirectTo — this forces OTP code mode
+        // No emailRedirectTo — forces OTP code mode (not magic link)
       },
     });
 
     if (error) {
-      console.error("[send-otp] error code:", error.status);
-      console.error("[send-otp] error message:", error.message);
+      // Log internally but return a generic message to the client
+      console.error("[send-otp] Supabase error:", error.status, error.message);
       return NextResponse.json(
-        { error: `${error.message}` },
+        { error: "Failed to send OTP. Please try again." },
         { status: 500 }
       );
     }
 
-    console.log("[send-otp] Success for:", email);
     return NextResponse.json({ message: "OTP sent to your email." });
   } catch (err) {
     console.error("[send-otp] Unexpected error:", err);
     return NextResponse.json(
-      { error: `Server error: ${err instanceof Error ? err.message : String(err)}` },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Restaurant } from "@/types/restaurant";
 import { generateMapsLink } from "@/utils/generateMapsLink";
 import { formatDistance } from "@/utils/formatDistance";
+import { getTypeLabel } from "@/utils/filterRestaurants";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -27,24 +28,14 @@ export function RestaurantCard({
     restaurant.longitude
   );
 
-  const typeLabel =
-    restaurant.type === "nonveg"
-      ? "Non Veg 🍗"
-      : restaurant.type === "veg"
-      ? "Veg 🥦"
-      : restaurant.type === "eggetarian"
-      ? "Eggetarian 🥚"
-      : "Veg & Non Veg";
+  const typeLabel = getTypeLabel(restaurant.type);
 
   return (
     <div className="palatr-card group">
       {/* Image */}
       <div className="absolute inset-0">
         <Image
-          src={
-            restaurant.image_url ||
-            "/images/placeholders/restaurant-placeholder.jpg"
-          }
+          src={restaurant.image_url || "/images/placeholders/restaurant-placeholder.jpg"}
           alt={restaurant.name}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -65,10 +56,7 @@ export function RestaurantCard({
       <div className="absolute bottom-0 p-7 z-10 w-full">
         <span className="card-tag">{typeLabel}</span>
 
-        <h3
-          className="text-4xl font-extrabold leading-tight"
-          style={{ letterSpacing: "-1px" }}
-        >
+        <h3 className="text-4xl font-extrabold leading-tight" style={{ letterSpacing: "-1px" }}>
           {restaurant.name}
         </h3>
 
@@ -102,8 +90,7 @@ export function RestaurantCard({
                 : "none",
             }}
           >
-            {restaurant.user_has_liked ? "❤️" : "🤍"}{" "}
-            {restaurant.likes_count ?? 0}
+            {restaurant.user_has_liked ? "❤️" : "🤍"} {restaurant.likes_count ?? 0}
           </button>
 
           <a
@@ -136,18 +123,13 @@ export function RestaurantCard({
         <button
           onClick={onReport}
           className="w-full mt-2 py-3 rounded-full font-bold text-sm transition-all"
-          style={{
-            background: "rgba(255,45,94,0.1)",
-            color: "#ff8fa8",
-          }}
+          style={{ background: "rgba(255,45,94,0.1)", color: "#ff8fa8" }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(255,45,94,0.2)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,45,94,0.2)";
             (e.currentTarget as HTMLButtonElement).style.color = "#ffb3c1";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(255,45,94,0.1)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,45,94,0.1)";
             (e.currentTarget as HTMLButtonElement).style.color = "#ff8fa8";
           }}
         >

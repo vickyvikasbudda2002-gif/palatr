@@ -230,7 +230,7 @@
 
   /* Floating action button */
   .fab {
-    @apply fixed right-9 flex items-center justify-center rounded-full text-white cursor-pointer transition-all z-50;
+    @apply fixed right-9 flex items-center justify-center rounded-full text-white cursor-pointer transition-all z-40;
     width: 70px;
     height: 70px;
     font-size: 32px;
@@ -360,6 +360,23 @@
   }
 }
 
+/* ── Keyframe animations ── */
+@keyframes gradientBG {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* ── Leaflet map dark-theme overrides ── */
 .leaflet-container {
   background: #0d0d0d;
@@ -423,8 +440,8 @@
   color: #ff2d5e !important;
 }
 
-/* Stadia tiles — no extra filter needed, roads are visible by default */
-.feed-map-wrapper .leaflet-tile-pane {
+/* Leaflet tile pane — no extra filter needed with Stadia tiles */
+.leaflet-tile-pane {
   filter: none;
 }
 

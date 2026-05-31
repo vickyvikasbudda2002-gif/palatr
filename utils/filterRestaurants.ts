@@ -2,6 +2,27 @@ import type { Restaurant } from "@/types/restaurant";
 
 export type FilterOption = "all" | "veg" | "nonveg" | "spicy" | "eggetarian";
 
+// ── Shared type label — used by RestaurantCard and FeedMap ───────────────────
+export function getTypeLabel(type: string): string {
+  switch (type) {
+    case "nonveg":     return "Non Veg 🍗";
+    case "veg":        return "Veg 🥦";
+    case "eggetarian": return "Eggetarian 🥚";
+    case "both":       return "Veg & Non Veg";
+    default:           return type;
+  }
+}
+
+// ── HTML-escape user content before inserting into raw HTML strings ──────────
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function filterRestaurants(
   restaurants: Restaurant[],
   filter: FilterOption
@@ -22,7 +43,7 @@ export function searchRestaurants(
   return restaurants.filter(
     (r) =>
       r.name.toLowerCase().includes(q) ||
-      r.description.toLowerCase().includes(q) ||
+      (r.description ?? "").toLowerCase().includes(q) ||
       r.must_try_dishes?.toLowerCase().includes(q)
   );
 }

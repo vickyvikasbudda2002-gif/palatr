@@ -35,8 +35,9 @@ export const useFeedStore = create<FeedState>((set) => ({
           ? {
               ...r,
               user_has_liked: !r.user_has_liked,
+              // Fix: likes_count can never go below 0
               likes_count: r.user_has_liked
-                ? (r.likes_count ?? 1) - 1
+                ? Math.max(0, (r.likes_count ?? 0) - 1)
                 : (r.likes_count ?? 0) + 1,
             }
           : r

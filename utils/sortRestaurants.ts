@@ -16,7 +16,7 @@ export function sortRestaurants(
       );
     case "az":
       return copy.sort((a, b) => a.name.localeCompare(b.name));
-    case "spicy":
+    case "spicy": {
       // Spiciness sort: nonveg > both > eggetarian > veg
       const spiceOrder: Record<string, number> = {
         nonveg: 3,
@@ -27,6 +27,7 @@ export function sortRestaurants(
       return copy.sort(
         (a, b) => (spiceOrder[b.type] ?? 0) - (spiceOrder[a.type] ?? 0)
       );
+    }
     default:
       return copy;
   }

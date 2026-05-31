@@ -36,7 +36,8 @@ export const useLocationStore = create<LocationState>((set) => ({
       },
       (err) => {
         set({ error: err.message, isLoading: false });
-      }
+      },
+      { timeout: 10000, maximumAge: 60000 } // 10s timeout, cache for 1 min
     );
   },
 }));

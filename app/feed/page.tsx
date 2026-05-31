@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRestaurants } from "@/hooks/useRestaurants";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -12,7 +12,6 @@ import { ReviewModal } from "@/components/review/ReviewModal";
 import { WatchReviewsModal } from "@/components/review/WatchReviewsModal";
 import { ReportModal } from "@/components/feed/ReportModal";
 import { AddRestaurantModal } from "@/components/add-restaurant/AddRestaurantModal";
-import { AddHiddenGemModal } from "@/components/hidden-gems/AddHiddenGemModal";
 import { NewToCityModal } from "@/components/top-three/NewToCityModal";
 import { Top3Modal } from "@/components/top-three/Top3Modal";
 import { ProfileModal } from "@/components/auth/ProfileModal";
@@ -30,48 +29,55 @@ const FeedMap = lazy(() =>
   import("@/components/feed/FeedMap").then((m) => ({ default: m.FeedMap }))
 );
 
-type ActiveModal = null | "review" | "watchReviews" | "report" | "addRestaurant" | "addGem" | "newToCity" | "top3" | "profile";
+type ActiveModal = null | "review" | "watchReviews" | "report" | "addRestaurant" | "newToCity" | "top3" | "profile";
 
 export default function FeedPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { restaurants, isLoading, handleLike } = useRestaurants(user?.id);
   const { requestLocation } = useGeolocation();
-  const { setSearchQuery, setFilter, setSort, searchQuery, filter, sort } = useFeedStore();
+  const { setSearchQuery, setFilter, setSort, searchQuery, filter, sort, restaurants: allRestaurants } = useFeedStore();
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
-  // New-to-city popup — show only once per user, never again after dismissed
+  // Redirect unauthenticated users — must be in useEffect, not render phase
+  useEffect(() => {
+    if (!authLoading && !user) {
+      window.location.replace("/");
+    }
+  }, [user, authLoading]);
+
+  // New-to-city popup — show only once per user ever
+  // Key is set AFTER user responds (not when modal appears)
   useEffect(() => {
     if (!user) return;
     const key = `palatr_city_shown_${user.id}`;
     if (typeof window !== "undefined" && !localStorage.getItem(key)) {
-      // Show after a short delay so the feed loads first
-      const timer = setTimeout(() => {
-        setActiveModal("newToCity");
-        localStorage.setItem(key, "1");
-      }, 3000);
+      const timer = setTimeout(() => setActiveModal("newToCity"), 3000);
       return () => clearTimeout(timer);
     }
   }, [user?.id]);
 
+  // Stable debounced search — recreating on every render breaks debounce
+  const handleSearch = useMemo(
+    () => debounce((val: string) => setSearchQuery(val), 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
   const { submitReview } = useReviews(selectedRestaurant?.id ?? "");
-  const handleSearch = debounce((val: string) => setSearchQuery(val), 300);
+
+  const closeModal = () => setActiveModal(null);
+  const modalOpen = activeModal !== null;
 
   if (authLoading) return <PageLoader />;
-
-  if (!user) {
-    if (typeof window !== "undefined") window.location.replace("/");
-    return <PageLoader />;
-  }
+  if (!user) return <PageLoader />;
 
   const cuisineLabel = getCuisineLabel(user.home_state);
 
   return (
     <div className="min-h-screen pb-36" style={{ background: "var(--bg)" }}>
-      {/* Pinned top navbar */}
       <FeedNavbar onProfileClick={() => setActiveModal("profile")} />
 
-      {/* Main content — offset below navbar */}
       <div className="feed-content-offset px-[5%]">
         {/* Header */}
         <div className="flex justify-between items-end gap-6 mb-10 flex-wrap pt-8">
@@ -85,7 +91,6 @@ export default function FeedPage() {
             <span style={{ color: "var(--muted)", fontWeight: 700 }}> food Bangalore loves.</span>
           </h1>
 
-          {/* Search / filter / sort controls */}
           <div className="flex gap-3 flex-wrap items-center">
             <input
               type="text"
@@ -125,20 +130,18 @@ export default function FeedPage() {
           </div>
         </div>
 
-        {/* Map — shows right after header, before the grid */}
+        {/* Map */}
         <Suspense fallback={
-          <div
-            style={{
-              height: "420px",
-              borderRadius: "24px",
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              marginBottom: "40px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{
+            height: "420px",
+            borderRadius: "24px",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            marginBottom: "40px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
             <div className="w-8 h-8 rounded-full border-2 border-[rgba(255,255,255,0.1)] border-t-[#ff2d5e] animate-spin" />
           </div>
         }>
@@ -176,12 +179,17 @@ export default function FeedPage() {
 
       <Footer />
 
-      <button className="fab fab-add" onClick={() => setActiveModal("addRestaurant")}>+</button>
-      <button className="fab fab-gem" onClick={() => window.location.href = "/hidden-gems"}>💎</button>
+      {/* FABs — hidden when any modal is open to prevent z-index bleed-through */}
+      {!modalOpen && (
+        <>
+          <button className="fab fab-add" onClick={() => setActiveModal("addRestaurant")}>+</button>
+          <button className="fab fab-gem" onClick={() => window.location.href = "/hidden-gems"}>💎</button>
+        </>
+      )}
 
       <ReviewModal
         isOpen={activeModal === "review"}
-        onClose={() => setActiveModal(null)}
+        onClose={closeModal}
         targetId={selectedRestaurant?.id ?? ""}
         targetType="restaurant"
         targetName={selectedRestaurant?.name ?? ""}
@@ -189,34 +197,44 @@ export default function FeedPage() {
       />
       <WatchReviewsModal
         isOpen={activeModal === "watchReviews"}
-        onClose={() => setActiveModal(null)}
+        onClose={closeModal}
         targetId={selectedRestaurant?.id ?? ""}
         targetType="restaurant"
         targetName={selectedRestaurant?.name ?? ""}
       />
       <ReportModal
         isOpen={activeModal === "report"}
-        onClose={() => setActiveModal(null)}
+        onClose={closeModal}
         restaurantId={selectedRestaurant?.id ?? ""}
         restaurantName={selectedRestaurant?.name ?? ""}
       />
-      <AddRestaurantModal isOpen={activeModal === "addRestaurant"} onClose={() => setActiveModal(null)} onSuccess={() => {}} />
-      <AddHiddenGemModal isOpen={activeModal === "addGem"} onClose={() => setActiveModal(null)} onSuccess={() => {}} />
+      <AddRestaurantModal
+        isOpen={activeModal === "addRestaurant"}
+        onClose={closeModal}
+        onSuccess={closeModal}
+      />
       <NewToCityModal
         isOpen={activeModal === "newToCity"}
         city={user.current_city}
-        onYes={() => setActiveModal(null)}
-        onNo={() => setActiveModal("top3")}
+        onYes={() => {
+          localStorage.setItem(`palatr_city_shown_${user.id}`, "1");
+          closeModal();
+        }}
+        onNo={() => {
+          localStorage.setItem(`palatr_city_shown_${user.id}`, "1");
+          setActiveModal("top3");
+        }}
       />
+      {/* Pass allRestaurants (unfiltered) so Top3 shows all options */}
       <Top3Modal
         isOpen={activeModal === "top3"}
         onBack={() => setActiveModal("newToCity")}
-        onClose={() => setActiveModal(null)}
-        restaurants={restaurants}
+        onClose={closeModal}
+        restaurants={allRestaurants}
         homeState={user.home_state}
         city={user.current_city}
       />
-      <ProfileModal isOpen={activeModal === "profile"} onClose={() => setActiveModal(null)} />
+      <ProfileModal isOpen={activeModal === "profile"} onClose={closeModal} />
     </div>
   );
 }

@@ -1,32 +1,29 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+
 interface FeedNavbarProps {
   onProfileClick: () => void;
 }
 
 export function FeedNavbar({ onProfileClick }: FeedNavbarProps) {
+  const [logoError, setLogoError] = useState(false);
+
   return (
     <nav className="feed-navbar">
-      {/* Logo — swap /logo.png with your actual logo file */}
-      <a href="/feed" className="feed-navbar-logo">
-        {/* If you have a logo image, replace the text below with:
-            <img src="/logo.png" alt="PALATR" />
-        */}
-        <img
-          src="/logo.png"
-          alt="PALATR"
-          onError={(e) => {
-            // Fallback to text if logo image not found yet
-            const target = e.currentTarget;
-            target.style.display = "none";
-            const fallback = target.nextElementSibling as HTMLElement | null;
-            if (fallback) fallback.style.display = "block";
-          }}
-        />
-        <span style={{ display: "none" }}>PALATR.</span>
-      </a>
+      <Link href="/feed" className="feed-navbar-logo">
+        {logoError ? (
+          <span>PALATR.</span>
+        ) : (
+          <img
+            src="/logo.png"
+            alt="PALATR"
+            onError={() => setLogoError(true)}
+          />
+        )}
+      </Link>
 
-      {/* Profile icon */}
       <button
         className="feed-navbar-profile"
         onClick={onProfileClick}

@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import { cn } from "@/lib/utils";
+
+// Ref-counted scroll lock — safe with multiple modals open simultaneously
+let openModalCount = 0;
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,19 +21,22 @@ export function Modal({
   maxWidth = "680px",
   className,
 }: ModalProps) {
-  // Lock body scroll when modal is open
+  const titleId = useId();
+
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      // Fire a resize event after modal closes so Leaflet recalculates map size
-      setTimeout(() => {
-        window.dispatchEvent(new Event("resize"));
-      }, 300);
-    }
+    if (!isOpen) return;
+
+    openModalCount++;
+    document.body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = "";
+      openModalCount--;
+      if (openModalCount <= 0) {
+        openModalCount = 0;
+        document.body.style.overflow = "";
+        // Fire resize so Leaflet recalculates map size after modal closes
+        setTimeout(() => window.dispatchEvent(new Event("resize")), 300);
+      }
     };
   }, [isOpen]);
 
@@ -39,6 +45,9 @@ export function Modal({
   return (
     <div
       className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.();
       }}

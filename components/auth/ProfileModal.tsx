@@ -33,12 +33,18 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
     setDeletionLoading(true);
     try {
-      await fetch("/api/auth/delete-account", { method: "POST" });
+      const res = await fetch("/api/auth/delete-account", { method: "POST" });
+      if (!res.ok) {
+        alert("Failed to submit deletion request. Please try again.");
+        return;
+      }
       setDeletionRequested(true);
       setTimeout(async () => {
         await signOut();
         router.push("/");
       }, 2000);
+    } catch {
+      alert("Something went wrong. Please try again.");
     } finally {
       setDeletionLoading(false);
     }

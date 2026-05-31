@@ -5,6 +5,7 @@ import { useLocationStore } from "@/store/locationStore";
 import type { Restaurant } from "@/types/restaurant";
 import { haversineDistance } from "@/utils/haversine";
 import { formatDistance } from "@/utils/formatDistance";
+import { getTypeLabel, escapeHtml } from "@/utils/filterRestaurants";
 
 interface FeedMapProps {
   restaurants: Restaurant[];
@@ -65,12 +66,12 @@ export function FeedMap({ restaurants }: FeedMapProps) {
     };
   }, []);
 
-  // ── Invalidate size after any render (modal open/close shifts layout) ──────
+  // ── Invalidate size after modal open/close (run only when restaurants change) ──
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const t = setTimeout(() => mapInstanceRef.current?.invalidateSize(), 350);
     return () => clearTimeout(t);
-  });
+  }, [mappableRestaurants]);
 
   // ── Restaurant pins ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -114,16 +115,12 @@ export function FeedMap({ restaurants }: FeedMapProps) {
                </span>`
             : "";
 
-        const typeLabel =
-          r.type === "nonveg" ? "Non Veg 🍗"
-          : r.type === "veg" ? "Veg 🥦"
-          : r.type === "eggetarian" ? "Eggetarian 🥚"
-          : "Veg & Non Veg";
+        const typeLabel = getTypeLabel(r.type);
 
         const popup = `
           <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:180px;max-width:220px;padding:4px 2px;">
-            <div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;line-height:1.3;">${r.name}</div>
-            <div style="font-size:11px;color:#8d8d8d;margin-bottom:6px;">${typeLabel}</div>
+            <div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;line-height:1.3;">${escapeHtml(r.name)}</div>
+            <div style="font-size:11px;color:#8d8d8d;margin-bottom:6px;">${escapeHtml(typeLabel)}</div>
             ${distText}
             <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}"
                target="_blank" rel="noopener noreferrer"
@@ -320,7 +317,7 @@ export function FeedMap({ restaurants }: FeedMapProps) {
           color: "var(--muted)",
           backdropFilter: "blur(10px)",
           whiteSpace: "nowrap",
-          zIndex: 1000,
+          zIndex: 1001,
         }}>
           No location data for current restaurants
         </div>

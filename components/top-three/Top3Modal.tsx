@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -235,15 +235,13 @@ export function Top3Modal({
 
     setLoading(true);
     try {
-      // Save to DB
+      // Save to DB — preserve original slot index as rank (fix: don't re-index after filter)
       await saveTopThree(
-        entries
-          .filter((e) => e.restaurant_id)
-          .map((e, i) => ({
-            rank: (i + 1) as 1 | 2 | 3,
-            restaurant_id: e.restaurant_id,
-            custom_dish: e.custom_dish,
-          }))
+        entries.flatMap((e, i) =>
+          e.restaurant_id
+            ? [{ rank: (i + 1) as 1 | 2 | 3, restaurant_id: e.restaurant_id, custom_dish: e.custom_dish }]
+            : []
+        )
       );
 
       // Generate poster
@@ -301,7 +299,7 @@ export function Top3Modal({
   // ── Poster preview screen ──────────────────────────────────────────────────
   if (posterUrl) {
     return (
-      <Modal isOpen={isOpen} maxWidth="560px">
+      <Modal isOpen={isOpen} onClose={handleClose} maxWidth="560px">
         <div className="modal-title" style={{ fontSize: "clamp(28px,4vw,40px)" }}>
           Your poster is ready! 🎉
         </div>
@@ -351,7 +349,7 @@ export function Top3Modal({
 
   // ── Entry form screen ──────────────────────────────────────────────────────
   return (
-    <Modal isOpen={isOpen} maxWidth="800px">
+    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="800px">
       <div className="modal-title">Your Top 3</div>
       <p className="modal-sub">
         Rate your top 3{" "}

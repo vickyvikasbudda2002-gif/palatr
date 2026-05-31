@@ -6,7 +6,7 @@ import { signupSchema } from "@/lib/validations/auth";
 
 const verifySchema = z.object({
   email: z.string().email().refine((e) => e.endsWith("@gmail.com")),
-  otp: z.string().min(6).max(8),
+  otp: z.string().length(6), // Supabase OTPs are exactly 6 digits
 });
 
 export async function POST(request: NextRequest) {
@@ -66,8 +66,7 @@ export async function POST(request: NextRequest) {
         message: "Login successful.",
         action: "login",
         user: existingProfile,
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
+        // Tokens intentionally omitted from body — Supabase SSR sets HttpOnly cookies
       });
     }
 
@@ -113,8 +112,7 @@ export async function POST(request: NextRequest) {
       message: "Account created.",
       action: "signup",
       user: newProfile,
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
+      // Tokens intentionally omitted from body — Supabase SSR sets HttpOnly cookies
     });
 
   } catch (err) {

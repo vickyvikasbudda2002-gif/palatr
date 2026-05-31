@@ -12,7 +12,7 @@ interface NewToCityModalProps {
 
 export function NewToCityModal({ isOpen, city, onYes, onNo }: NewToCityModalProps) {
   return (
-    <Modal isOpen={isOpen} maxWidth="600px">
+    <Modal isOpen={isOpen} onClose={onYes} maxWidth="600px">
       <div className="modal-title">
         Are you new<br />to{" "}
         <span style={{ color: "var(--primary)" }}>{city}</span>?
@@ -20,7 +20,6 @@ export function NewToCityModal({ isOpen, city, onYes, onNo }: NewToCityModalProp
       <p className="modal-sub">
         Let us customize your experience based on how well you know the city.
       </p>
-
       <Button variant="primary" size="lg" className="mt-8" onClick={onYes}>
         Yes! Continue to home feed
       </Button>

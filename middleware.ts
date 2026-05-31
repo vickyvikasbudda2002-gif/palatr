@@ -2,16 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
 
+const PROTECTED_PATHS = ["/feed", "/hidden-gems", "/top-three", "/profile", "/admin"];
+const ADMIN_PATHS = ["/admin"];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect these routes
-  const protectedPaths = ["/feed", "/hidden-gems", "/top-three", "/profile", "/admin"];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
-
-  if (!isProtected) {
-    return NextResponse.next({ request });
-  }
+  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+  if (!isProtected) return NextResponse.next({ request });
 
   try {
     let response = NextResponse.next({ request });
@@ -43,10 +41,25 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
+    // Admin route protection — check is_admin flag
+    const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+    if (isAdminPath) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.is_admin) {
+        return NextResponse.redirect(new URL("/feed", request.url));
+      }
+    }
+
     return response;
-  } catch {
-    // If anything fails, let the request through — client will handle auth
-    return NextResponse.next({ request });
+  } catch (err) {
+    console.error("[middleware] Auth check failed:", err);
+    // On Supabase outage, redirect to home rather than allowing through
+    return NextResponse.redirect(new URL("/", request.url));
   }
 }
 
